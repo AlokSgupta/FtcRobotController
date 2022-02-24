@@ -39,4 +39,18 @@ public class MecanumDrive {
         backRightMotor.setPower(backRightPower);
 
     }
+
+    public double getFLMotorRotations() {
+        return frontLeftMotor.getCurrentPosition();
+    }
+    public double getFRMotorRotations() {
+        return frontRightMotor.getCurrentPosition();
+    }
+    public double getBLMotorRotations() {
+        return backLeftMotor.getCurrentPosition();
+    }
+    public double getBRMotorRotations() {
+        return backRightMotor.getCurrentPosition();
+    }
+
 }

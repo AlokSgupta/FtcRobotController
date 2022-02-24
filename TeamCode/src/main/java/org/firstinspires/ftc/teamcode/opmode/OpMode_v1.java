@@ -27,12 +27,16 @@ public class OpMode_v1 extends OpMode {
         telemetry.addData("button",gamepad1.a);
         telemetry.addData("button",gamepad1.b);
         telemetry.addData("Press ", rcHub.getArmMotorRotations());
+        telemetry.addData("FL ", mcDrive.getFLMotorRotations());
+        telemetry.addData("FR ", mcDrive.getFRMotorRotations());
+        telemetry.addData("BL ", mcDrive.getBLMotorRotations());
+        telemetry.addData("BR ", mcDrive.getBRMotorRotations());
 
         // Drive Train  Starts
         //double speedY= -gamepad1.left_stick_y; //Y is reversed
         //double speedX= gamepad1.left_stick_x; // X co-ordinates
         //double speedRX= gamepad1.right_stick_x; // Angle or turn
-        mcDrive.DriveRobot(gamepad1.left_stick_y*.6,gamepad1.left_stick_x*.6,gamepad1.right_stick_x*.6);
+        mcDrive.DriveRobot(-gamepad1.left_stick_y*.6,-gamepad1.left_stick_x*.6,-gamepad1.right_stick_x*.6);
         // Drive train ends
 
         // Intake  Starts
@@ -66,6 +70,8 @@ public class OpMode_v1 extends OpMode {
             // Press Y: goto Level 3
             if(gamepad1.y){
                 rcHub.armRuntoPosition(6200,1.0);
+                telemetry.addData("Press Y", rcHub.getArmMotorRotations());
+                telemetry.update();
             }
         }
         else
