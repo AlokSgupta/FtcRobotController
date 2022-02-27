@@ -61,9 +61,9 @@ public class OpMode_v1 extends OpMode {
         // Arm program - Starts
         if (rcHub.getTouchSensorState()){
             rcHub.setArmMotorSpeed(0);
-            // Press b: Go to level 2
+            // Press b: Go to level 1
             if(gamepad1.b) {
-                rcHub.armRuntoPosition(4000,1.0);
+                rcHub.armRuntoPosition(2000,1.0);
                 telemetry.addData("Press b", rcHub.getArmMotorRotations());
                 telemetry.update();
             }
