@@ -57,6 +57,7 @@ public class OpMode_v1 extends OpMode {
             rcIntake.setDuckWheelSpeed(0);
         //Cap stone - Game Pad 2
         rcHub.setServoPosition(gamepad2.left_stick_x);
+        rcHub.setHServoPosition(gamepad2.right_stick_x);
 
         // Arm program - Starts
         if (rcHub.getTouchSensorState()){

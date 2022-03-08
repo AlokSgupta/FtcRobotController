@@ -10,12 +10,14 @@ public class RevControlHub {
     private TouchSensor touchSensor;
     private DcMotor armMotor;
     private Servo capServo;
+    private Servo handleServo;
     private double ticksPerRotation;
 
     public void init (HardwareMap hwMap){
         touchSensor = (TouchSensor) hwMap.get("touch");
         armMotor = (DcMotor) hwMap.get("arm");
         capServo = (Servo) hwMap.get("rev1");
+        handleServo = (Servo) hwMap.get("rev2");
         armMotor.setDirection(DcMotor.Direction.REVERSE);
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -48,6 +50,11 @@ public class RevControlHub {
 
     public void setServoPosition (double postion){
         capServo.setPosition(postion);
+
+    }
+
+    public void setHServoPosition (double postion){
+        handleServo.setPosition(postion);
 
     }
 }

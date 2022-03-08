@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.Autonumus;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -9,10 +11,12 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.List;
 
-@TeleOp(name = "RedCside", group = "FTC14464")
+@Autonomous(name = "RedCside", group = "FTC14464")
 public class RedCSide extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
@@ -28,6 +32,7 @@ public class RedCSide extends LinearOpMode {
     int identifiedLevel= 3;
     float markerLocation;
     float duckLocation;
+    boolean isDuckFound = false;
     /**
      * Initialize the Vuforia localization engine.
      */
@@ -60,7 +65,60 @@ public class RedCSide extends LinearOpMode {
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
     }
+    private void setlocations(){
+        if (tfod != null) {
+            // getUpdatedRecognitions() will return null if no new information is available since
+            // the last time that call was made.
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            if (updatedRecognitions != null) {
+                telemetry.addData("# Object Detected", updatedRecognitions.size());
+                // step through the list of recognitions and display boundary info.
+                int i = 0;
 
+                for (Recognition recognition : updatedRecognitions) {
+                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                            recognition.getLeft(), recognition.getTop());
+                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                            recognition.getRight(), recognition.getBottom());
+                    i++;
+                    // Check label to see if the camera get the ducks
+                    if (recognition.getLabel().equals("Duck")){
+                        isDuckFound = true;
+                        duckLocation = recognition.getLeft();
+                        telemetry.addData("ojbect Detected d " , "Duck");
+                        telemetry.addData("Location " , duckLocation);
+                    }
+
+                    // Check label to see if the camera get the ducks
+                    if (recognition.getLabel().equals("Marker")){
+                        markerLocation = recognition.getLeft();
+                        telemetry.addData("ojbect Detected d " , "Marker");
+                        telemetry.addData("Location " , markerLocation);
+                    }
+                }
+                telemetry.update();
+
+            }
+        }
+    }
+
+    private void setLevles(){
+        // TODO: Get the level
+        if(isDuckFound){
+            if (duckLocation > markerLocation){
+                identifiedLevel = 2;
+            }
+            else {
+                identifiedLevel = 1;
+            }
+        }
+        else {
+            identifiedLevel = 3;
+        }
+        telemetry.addData("level",identifiedLevel);
+        telemetry.update();
+    }
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
@@ -74,65 +132,47 @@ public class RedCSide extends LinearOpMode {
          **/
         if (tfod != null) {
             tfod.activate();
+            tfod.setZoom(1.0, 16.0/9.0);
         }
 
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        Pose2d startPose = new Pose2d(0, 0, 0);
+        drive.setPoseEstimate(startPose);
+        TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
+                .back(10)
+                .strafeRight(20)
+                .forward(30)
+                .build();
+        TrajectorySequence trajSeq1 = drive.trajectorySequenceBuilder(startPose)
+                .back(30)
+                .strafeLeft(40)
+                .turn(-90)
+                .build();
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
+
         waitForStart();
+// Get the location of Duck
+        setlocations();
+        setLevles();
 
-        if (opModeIsActive()) {
-            while (opModeIsActive()) {
-                if (tfod != null) {
-                    // getUpdatedRecognitions() will return null if no new information is available since
-                    // the last time that call was made.
-                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                    if (updatedRecognitions != null) {
-                        telemetry.addData("# Object Detected", updatedRecognitions.size());
-                        // step through the list of recognitions and display boundary info.
-                        int i = 0;
-                       boolean isDuckFound = false;
-                        for (Recognition recognition : updatedRecognitions) {
-                            telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                            telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                    recognition.getLeft(), recognition.getTop());
-                            telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                    recognition.getRight(), recognition.getBottom());
-                            i++;
-                            // Check label to see if the camera get the ducks
-                            if (recognition.getLabel().equals("Duck")){
-                                isDuckFound = true;
-                               duckLocation = recognition.getLeft();
-                               telemetry.addData("ojbect Detected d " , "Duck");
-                                telemetry.addData("Location " , duckLocation);
-                            }
-
-                            // Check label to see if the camera get the ducks
-                            if (recognition.getLabel().equals("Marker")){
-                                markerLocation = recognition.getLeft();
-                                telemetry.addData("ojbect Detected d " , "Marker");
-                                telemetry.addData("Location " , markerLocation);
-                            }
-                        }
-                        telemetry.update();
-                        // TODO: Get the level
-                        if(isDuckFound){
-                            if (duckLocation > markerLocation){
-                                identifiedLevel = 2;
-                            }
-                            else {
-                                identifiedLevel = 1;
-                            }
-                        }
-                        else {
-                            identifiedLevel = 3;
-                        }
-                      telemetry.addData("level",identifiedLevel);
-                        telemetry.update();
-                    }
-                }
-            }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        if (!isStopRequested()) {
+            drive.followTrajectorySequence(trajSeq);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            drive.followTrajectorySequence(trajSeq1);
+        }
+
+
     }
 
 
