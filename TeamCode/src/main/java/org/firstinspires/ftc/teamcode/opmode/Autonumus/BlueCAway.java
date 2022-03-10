@@ -15,9 +15,8 @@ import org.firstinspires.ftc.teamcode.mechanism.RevHubControlActuators;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.List;
-
-@Autonomous(name = "BlueCside", group = "FTC14464")
-public class BlueCside extends LinearOpMode {
+@Autonomous(name = "BlueCAway", group = "FTC14464")
+public class BlueCAway extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
             "Ball",
@@ -108,7 +107,7 @@ public class BlueCside extends LinearOpMode {
     private void setLevles(){
         // TODO: Get the level
         if(isDuckFound){
-            if (duckLocation < markerLocation){
+            if (duckLocation > markerLocation){
                 identifiedLevel = 2;
             }
             else {
@@ -142,25 +141,20 @@ public class BlueCside extends LinearOpMode {
         Pose2d startPose = new Pose2d(0, 0, 0);
         drive.setPoseEstimate(startPose);
         TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
-                .strafeLeft(23)
-                .back(13)
-                .forward(18)
+                .forward(2)
+                .strafeRight(20)
+                .back(15)
+                .forward(19)
                 .build();
         TrajectorySequence trajSeq1 = drive.trajectorySequenceBuilder(startPose)
-
-                .turn(Math.toRadians(90),Math.toRadians(90),Math.toRadians(90))
-                .back(30)
-                .strafeLeft(23)
-                .back(10)
+                .back(19)
                 .build();
-
         TrajectorySequence trajSeq2 = drive.trajectorySequenceBuilder(startPose)
-                .turn(Math.toRadians(-100))
+                .turn(Math.toRadians(90),Math.toRadians(90),Math.toRadians(90))
+                .strafeLeft(5)
+                .forward(40)
+                //   .strafeRight(50)
                 .build();
-        TrajectorySequence trajSeq3 = drive.trajectorySequenceBuilder(startPose)
-                .forward(20)
-                .build();
-
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
@@ -186,7 +180,7 @@ public class BlueCside extends LinearOpMode {
             // outtake
             rcIntake.setIntakeSpeed(-1);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -197,26 +191,12 @@ public class BlueCside extends LinearOpMode {
             drive.followTrajectorySequence(trajSeq1);
 
 
-            // run motor carasoul
-            rcIntake.setDuckWheelSpeed(-0.3);
 
-
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            // Stop Motor
-            rcIntake.setDuckWheelSpeed(0);
 
             //  drive.turn(Math.toRadians(-90));
             // 3 path
             drive.setPoseEstimate(startPose);
             drive.followTrajectorySequence(trajSeq2);
-
-            // 3 path
-            drive.setPoseEstimate(startPose);
-            drive.followTrajectorySequence(trajSeq3);
 
         }
 

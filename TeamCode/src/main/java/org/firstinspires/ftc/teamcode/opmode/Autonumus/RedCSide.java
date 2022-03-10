@@ -12,6 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.mechanism.RevControlHub;
+import org.firstinspires.ftc.teamcode.mechanism.RevHubControlActuators;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.List;
@@ -33,6 +35,8 @@ public class RedCSide extends LinearOpMode {
     float markerLocation;
     float duckLocation;
     boolean isDuckFound = false;
+    RevHubControlActuators rcIntake = new RevHubControlActuators();
+    RevControlHub rcHub = new RevControlHub();
     /**
      * Initialize the Vuforia localization engine.
      */
@@ -125,7 +129,8 @@ public class RedCSide extends LinearOpMode {
         // first.
         initVuforia();
         initTfod();
-
+        rcIntake.init(hardwareMap);
+        rcHub.init(hardwareMap);
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
          * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
@@ -139,14 +144,19 @@ public class RedCSide extends LinearOpMode {
         Pose2d startPose = new Pose2d(0, 0, 0);
         drive.setPoseEstimate(startPose);
         TrajectorySequence trajSeq = drive.trajectorySequenceBuilder(startPose)
-                .back(10)
-                .strafeRight(20)
-                .forward(30)
+                .forward(2)
+                .strafeRight(23)
+                .back(2)
+                .forward(18)
                 .build();
         TrajectorySequence trajSeq1 = drive.trajectorySequenceBuilder(startPose)
-                .back(30)
                 .strafeLeft(40)
-                .turn(-90)
+                .back(30)
+                .build();
+        TrajectorySequence trajSeq2 = drive.trajectorySequenceBuilder(startPose)
+            //   .turn(Math.toRadians(-90),15,15)
+                .forward(20)
+             //   .strafeRight(50)
                 .build();
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
@@ -157,19 +167,50 @@ public class RedCSide extends LinearOpMode {
         setlocations();
         setLevles();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        ///code
+        // run the arm
         if (!isStopRequested()) {
+            if (identifiedLevel == 1) {
+                rcHub.armRuntoPosition(2000, 1.0);
+            } else if (identifiedLevel == 2){
+                rcHub.armRuntoPosition(4000, 1.0);
+            } else {
+                rcHub.armRuntoPosition(6200, 1.0);
+            }
+            // 1 path
             drive.followTrajectorySequence(trajSeq);
+
+            // outtake
+            rcIntake.setIntakeSpeed(-1);
             try {
-                Thread.sleep(5000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            drive.followTrajectorySequence(trajSeq1);
+            rcIntake.setIntakeSpeed(0);
+
+            // 2 path
+            drive.setPoseEstimate(startPose);
+              drive.followTrajectorySequence(trajSeq1);
+
+
+            // run motor carasoul
+             rcIntake.setDuckWheelSpeed(-0.3);
+
+
+               try {
+                 Thread.sleep(3000);
+             } catch (InterruptedException e) {
+                e.printStackTrace();
+             }
+            // Stop Motor
+              rcIntake.setDuckWheelSpeed(0);
+
+            //  drive.turn(Math.toRadians(-90));
+            // 3 path
+            drive.setPoseEstimate(startPose);
+            drive.followTrajectorySequence(trajSeq2);
+
         }
 
 
